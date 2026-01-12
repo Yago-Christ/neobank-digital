@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeoBank - Banco Digital</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .logo {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: bold;
+            margin: 10px;
+            transition: transform 0.3s;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        .accounts {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        .account {
+            background: white;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            border-left: 4px solid #667eea;
+        }
+        .account strong {
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">💳</div>
+        <h1>NeoBank Digital</h1>
+        <p style="color: #666; margin-bottom: 30px;">
+            Banco digital completo para demonstração<br>
+            Acesse com uma das contas abaixo:
+        </p>
+        
+        <div class="accounts">
+            <div class="account">
+                <strong>👨‍💼 Administrador:</strong><br>
+                CPF: 111.111.111-11 | Senha: admin123
+            </div>
+            <div class="account">
+                <strong>👤 Usuário Teste:</strong><br>
+                CPF: 123.456.789-00 | Senha: teste123
+            </div>
+        </div>
+        
+        <a href="neobank.html" class="btn">🚀 Acessar NeoBank</a>
+        
+        <p style="color: #999; font-size: 14px; margin-top: 30px;">
+            💡 Dica: Cada navegador mantém seus próprios dados<br>
+            Use navegadores diferentes para testar múltiplos usuários
+        </p>
+    </div>
+</body>
+</html>

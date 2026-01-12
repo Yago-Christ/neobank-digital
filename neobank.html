@@ -1,0 +1,2358 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeoBank - Banco Digital Completo</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --primary: #8A05BE;
+            --secondary: #03DAC6;
+            --success: #00C853;
+            --error: #B00020;
+            --warning: #FF9800;
+            --bg-dark: #0f3460;
+            --bg-darker: #16213e;
+            --text-light: #FFFFFF;
+            --text-muted: #B0B0B0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--bg-darker) 0%, var(--bg-dark) 100%);
+            color: var(--text-light);
+            min-height: 100vh;
+        }
+
+        #app { min-height: 100vh; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        
+        .login-screen, .register-screen {
+            display: flex; align-items: center; justify-content: center;
+            min-height: 100vh; padding: 20px;
+        }
+
+        .auth-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 20px; padding: 40px;
+            width: 100%; max-width: 450px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .logo {
+            text-align: center; font-size: 36px;
+            font-weight: bold; margin-bottom: 30px;
+            color: var(--primary);
+        }
+
+        .form-group { margin-bottom: 20px; }
+        .form-group label {
+            display: block; margin-bottom: 8px;
+            font-size: 14px; color: var(--text-muted);
+        }
+
+        .form-group input, .form-group select {
+            width: 100%; padding: 12px 16px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px; color: var(--text-light);
+            font-size: 16px; transition: all 0.3s;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none; border-color: var(--primary);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .btn {
+            width: 100%; padding: 14px; border: none;
+            border-radius: 10px; font-size: 16px;
+            font-weight: bold; cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: var(--primary); color: white;
+        }
+
+        .btn-primary:hover {
+            background: #9b27af; transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 2px solid var(--secondary);
+            color: var(--secondary); margin-top: 10px;
+        }
+
+        .btn-secondary:hover {
+            background: var(--secondary);
+            color: var(--bg-darker);
+        }
+
+        .header {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px 0; margin-bottom: 30px;
+        }
+
+        .header-content {
+            max-width: 1200px; margin: 0 auto;
+            padding: 0 20px; display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-logo {
+            font-size: 24px; font-weight: bold;
+            color: var(--primary);
+        }
+
+        .header-user {
+            display: flex; align-items: center; gap: 15px;
+        }
+
+        .btn-logout {
+            background: var(--error); color: white;
+            padding: 8px 20px; border: none;
+            border-radius: 8px; cursor: pointer;
+            font-weight: bold;
+        }
+
+        .balance-card {
+            background: linear-gradient(135deg, var(--primary), #9b27af);
+            border-radius: 20px; padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(138, 5, 190, 0.3);
+        }
+
+        .balance-label {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 10px;
+        }
+
+        .balance-amount {
+            font-size: 48px; font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px; margin-bottom: 30px;
+        }
+
+        .action-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px; padding: 20px;
+            text-align: center; cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .action-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--primary);
+            transform: translateY(-3px);
+        }
+
+        .action-icon { font-size: 32px; margin-bottom: 10px; }
+        .action-label { font-size: 14px; font-weight: 600; }
+
+        .section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px; padding: 25px;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 20px; font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .transaction-item {
+            display: flex; justify-content: space-between;
+            align-items: center; padding: 15px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 10px; margin-bottom: 10px;
+        }
+
+        .transaction-info {
+            display: flex; align-items: center; gap: 15px;
+        }
+
+        .transaction-icon {
+            font-size: 24px; width: 45px; height: 45px;
+            display: flex; align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+        }
+
+        .transaction-details h4 {
+            font-size: 16px; margin-bottom: 5px;
+        }
+
+        .transaction-details p {
+            font-size: 12px; color: var(--text-muted);
+        }
+
+        .transaction-amount {
+            font-size: 18px; font-weight: bold;
+        }
+
+        .amount-positive { color: var(--success); }
+        .amount-negative { color: var(--error); }
+
+        .modal {
+            display: none; position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px); z-index: 1000;
+            align-items: center; justify-content: center;
+            padding: 20px;
+        }
+
+        .modal.active { display: flex; }
+
+        .modal-content {
+            background: var(--bg-dark);
+            border-radius: 20px; padding: 30px;
+            max-width: 500px; width: 100%;
+            max-height: 90vh; overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex; justify-content: space-between;
+            align-items: center; margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 24px; font-weight: bold;
+        }
+
+        .btn-close {
+            background: transparent; border: none;
+            color: var(--text-light); font-size: 24px;
+            cursor: pointer;
+        }
+
+        .card-visual {
+            background: linear-gradient(135deg, #8A05BE, #d946ef);
+            border-radius: 15px; padding: 25px;
+            margin: 20px 0; min-height: 200px;
+            position: relative;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-logo {
+            position: absolute; top: 20px; right: 20px;
+            font-weight: bold; font-size: 18px;
+        }
+
+        .card-number {
+            font-size: 24px; letter-spacing: 3px;
+            margin: 60px 0 20px 0;
+        }
+
+        .card-info {
+            display: flex; justify-content: space-between;
+        }
+
+        .pix-options, .loan-options, .insurance-options {
+            display: grid; gap: 15px;
+        }
+
+        .pix-option, .loan-option, .insurance-option {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px; padding: 20px;
+            cursor: pointer; transition: all 0.3s;
+            display: flex; align-items: center; gap: 15px;
+        }
+
+        .pix-option:hover, .loan-option:hover, .insurance-option:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--primary);
+        }
+
+        .investment-item, .rewards-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px; padding: 20px;
+            margin-bottom: 15px;
+        }
+
+        .investment-header, .rewards-header {
+            display: flex; justify-content: space-between;
+            align-items: center; margin-bottom: 10px;
+        }
+
+        .investment-name, .rewards-name {
+            font-size: 18px; font-weight: bold;
+        }
+
+        .investment-return, .rewards-points {
+            color: var(--success); font-weight: bold;
+        }
+
+        .progress-bar {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px; height: 10px;
+            overflow: hidden; margin: 10px 0;
+        }
+
+        .progress-fill {
+            background: var(--primary); height: 100%;
+            border-radius: 10px; transition: width 0.3s;
+        }
+
+        .chat-container {
+            height: 400px; display: flex;
+            flex-direction: column;
+        }
+
+        .chat-messages {
+            flex: 1; overflow-y: auto; padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px; margin-bottom: 15px;
+        }
+
+        .chat-message {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px 15px; border-radius: 10px;
+            margin-bottom: 10px; max-width: 80%;
+        }
+
+        .chat-message.bot {
+            background: rgba(138, 5, 190, 0.3);
+            margin-right: auto;
+        }
+
+        .chat-message.user {
+            background: rgba(3, 218, 198, 0.3);
+            margin-left: auto;
+        }
+
+        .chat-input-container {
+            display: flex; gap: 10px;
+        }
+
+        .chat-input { flex: 1; }
+
+        .btn-send {
+            background: var(--primary);
+            color: white; padding: 12px 25px;
+            border: none; border-radius: 10px;
+            font-weight: bold; cursor: pointer;
+        }
+
+        .hidden { display: none !important; }
+        .text-center { text-align: center; }
+        .mt-20 { margin-top: 20px; }
+
+        .credit-card-section {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 10px; padding: 15px;
+            margin-top: 15px;
+        }
+
+        .credit-info {
+            display: flex; justify-content: space-between;
+            margin-bottom: 10px; font-size: 14px;
+        }
+
+        .invoice-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px; padding: 12px;
+            margin-bottom: 8px; display: flex;
+            justify-content: space-between;
+        }
+
+        .qrcode-container {
+            text-align: center; padding: 20px;
+            background: white; border-radius: 15px;
+            margin: 20px 0;
+        }
+
+        #qr-reader {
+            width: 100%; max-width: 500px;
+            margin: 0 auto; border-radius: 10px;
+            overflow: hidden;
+        }
+
+        #qr-reader video {
+            border-radius: 10px;
+        }
+
+        .qr-info {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px; padding: 15px;
+            margin: 15px 0; text-align: left;
+        }
+
+        .qr-info-item {
+            display: flex; justify-content: space-between;
+            padding: 8px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .qr-info-item:last-child {
+            border-bottom: none;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 8px;
+                max-width: 100vw;
+            }
+            .header-content {
+                flex-direction: column;
+                gap: 10px;
+                padding: 0 8px;
+            }
+            .balance-card {
+                padding: 18px;
+                font-size: 16px;
+            }
+            .quick-actions {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
+            }
+            .action-btn {
+                padding: 12px;
+                font-size: 14px;
+            }
+            .section {
+                padding: 12px;
+                font-size: 15px;
+            }
+            .modal-content {
+                padding: 12px;
+                max-width: 98vw;
+                border-radius: 12px;
+            }
+            table {
+                font-size: 13px;
+                overflow-x: auto;
+                display: block;
+            }
+            th, td {
+                padding: 6px;
+            }
+            .chat-container {
+                height: 250px;
+            }
+            .chat-messages {
+                padding: 8px;
+            }
+            .chat-message {
+                font-size: 13px;
+                padding: 7px 10px;
+            }
+            .btn, .btn-primary, .btn-secondary, .btn-send {
+                font-size: 15px;
+                padding: 10px 12px;
+            }
+            input, select {
+                font-size: 15px;
+                padding: 8px 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app"></div>
+    <script>
+const APP = {
+    currentUser: null,
+    users: [],
+    transactions: [],
+    cards: [],
+    investments: [],
+    loans: [],
+    insurances: [],
+    rewards: [],
+    supportTickets: [],
+    qrScanner: null,
+    
+    init() {
+        this.loadData();
+        this.ensureAdminUser();
+        this.migrateUsersWithoutPixKey();
+        this.updateInvestmentReturns();
+        this.render();
+        
+        setInterval(() => {
+            if (this.currentUser) {
+                this.updateInvestmentReturns();
+                this.render();
+            }
+        }, 60000);
+    },
+
+    ensureAdminUser() {
+        // Verifica se existe um admin; se não, cria um
+        const adminExists = this.users.some(u => u.isAdmin === true);
+        if (!adminExists) {
+            const admin = {
+                id: 'admin_' + Date.now(),
+                name: 'Administrador',
+                cpf: '111.111.111-11',
+                email: 'admin@neobank.com',
+                phone: '(11) 99999-9999',
+                password: 'admin123',
+                balance: 50000.00,
+                creditLimit: 10000.00,
+                pixKey: this.generatePixKey(),
+                isAdmin: true,
+                createdAt: new Date().toISOString()
+            };
+            this.users.push(admin);
+            
+            // Criar também um usuário de teste
+            const testUser = {
+                id: 'user_' + Date.now(),
+                name: 'Teste Silva',
+                cpf: '123.456.789-00',
+                email: 'teste@neobank.com',
+                phone: '(11) 98888-8888',
+                password: 'teste123',
+                balance: 5000.00,
+                creditLimit: 5000.00,
+                pixKey: this.generatePixKey(),
+                createdAt: new Date().toISOString()
+            };
+            this.users.push(testUser);
+            
+            this.saveData();
+            console.log('👨‍💼 USUÁRIO ADMIN CRIADO:');
+            console.log('CPF: 111.111.111-11');
+            console.log('Senha: admin123');
+            console.log('');
+            console.log('👤 USUÁRIO TESTE CRIADO:');
+            console.log('CPF: 123.456.789-00');
+            console.log('Senha: teste123');
+            console.log('Email: teste@neobank.com');
+        }
+    },
+
+    migrateUsersWithoutPixKey() {
+        let updated = false;
+        this.users.forEach(user => {
+            if (!user.pixKey) {
+                user.pixKey = this.generatePixKey();
+                updated = true;
+            }
+        });
+        if (updated) {
+            this.saveData();
+        }
+    },
+
+    updateInvestmentReturns() {
+        let updated = false;
+        const now = Date.now();
+        
+        this.investments.forEach(investment => {
+            const createdAt = new Date(investment.createdAt).getTime();
+            const lastUpdate = investment.lastUpdate || createdAt;
+            const timeElapsed = now - lastUpdate;
+            
+            const minutesElapsed = timeElapsed / (1000 * 60);
+            
+            if (minutesElapsed >= 1) {
+                const monthlyRate = investment.return / 100;
+                
+                let minuteRate;
+                if (investment.type === 'turbo') {
+                    minuteRate = monthlyRate / (30 * 24);
+                } else {
+                    minuteRate = monthlyRate / (30 * 24 * 60);
+                }
+                
+                const earnings = investment.amount * minuteRate * minutesElapsed;
+                
+                investment.amount += earnings;
+                investment.lastUpdate = now;
+                investment.totalEarnings = (investment.totalEarnings || 0) + earnings;
+                
+                updated = true;
+            }
+        });
+        
+        if (updated) {
+            this.saveData();
+        }
+    },
+
+    loadData() {
+        this.users = JSON.parse(localStorage.getItem('neobank_users') || '[]');
+        this.transactions = JSON.parse(localStorage.getItem('neobank_transactions') || '[]');
+        this.cards = JSON.parse(localStorage.getItem('neobank_cards') || '[]');
+        this.investments = JSON.parse(localStorage.getItem('neobank_investments') || '[]');
+        this.loans = JSON.parse(localStorage.getItem('neobank_loans') || '[]');
+        this.insurances = JSON.parse(localStorage.getItem('neobank_insurances') || '[]');
+        this.rewards = JSON.parse(localStorage.getItem('neobank_rewards') || '[]');
+        this.supportTickets = JSON.parse(localStorage.getItem('neobank_support_tickets') || '[]');
+        
+        const currentUserId = localStorage.getItem('neobank_current_user');
+        if (currentUserId) {
+            this.currentUser = this.users.find(u => u.id === currentUserId);
+        }
+    },
+
+    saveData() {
+        localStorage.setItem('neobank_users', JSON.stringify(this.users));
+        localStorage.setItem('neobank_transactions', JSON.stringify(this.transactions));
+        localStorage.setItem('neobank_cards', JSON.stringify(this.cards));
+        localStorage.setItem('neobank_investments', JSON.stringify(this.investments));
+        localStorage.setItem('neobank_loans', JSON.stringify(this.loans));
+        localStorage.setItem('neobank_insurances', JSON.stringify(this.insurances));
+        localStorage.setItem('neobank_rewards', JSON.stringify(this.rewards));
+        localStorage.setItem('neobank_support_tickets', JSON.stringify(this.supportTickets));
+    },
+
+    render() {
+        const app = document.getElementById('app');
+        if (!this.currentUser) {
+            app.innerHTML = this.renderLogin();
+        } else {
+            app.innerHTML = this.renderDashboard();
+        }
+        this.attachEventListeners();
+    },
+
+    renderLogin() {
+        return `
+            <div class="login-screen">
+                <div class="auth-card">
+                    <div class="logo">💳 NeoBank</div>
+                    <h2 class="text-center" style="margin-bottom: 30px;">Bem-vindo</h2>
+                    <div class="form-group">
+                        <label>CPF</label>
+                        <input type="text" id="login-cpf" placeholder="000.000.000-00" maxlength="14">
+                    </div>
+                    <div class="form-group">
+                        <label>Senha</label>
+                        <input type="password" id="login-password" placeholder="Digite sua senha">
+                    </div>
+                    <button class="btn btn-primary" onclick="APP.login()">Entrar</button>
+                    <button class="btn btn-secondary" onclick="APP.showRegister()">Criar conta grátis</button>
+                </div>
+            </div>
+        `;
+    },
+
+    renderRegister() {
+        return `
+            <div class="register-screen">
+                <div class="auth-card">
+                    <div class="logo">💳 NeoBank</div>
+                    <h2 class="text-center" style="margin-bottom: 30px;">Criar Conta</h2>
+                    <div class="form-group">
+                        <label>Nome Completo</label>
+                        <input type="text" id="reg-name" placeholder="Seu nome">
+                    </div>
+                    <div class="form-group">
+                        <label>CPF</label>
+                        <input type="text" id="reg-cpf" placeholder="000.000.000-00" maxlength="14">
+                    </div>
+                    <div class="form-group">
+                        <label>E-mail</label>
+                        <input type="email" id="reg-email" placeholder="seu@email.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Telefone</label>
+                        <input type="text" id="reg-phone" placeholder="(00) 00000-0000" maxlength="15">
+                    </div>
+                    <div class="form-group">
+                        <label>Senha</label>
+                        <input type="password" id="reg-password" placeholder="Crie uma senha">
+                    </div>
+                    <button class="btn btn-primary" onclick="APP.register()">Criar Conta</button>
+                    <button class="btn btn-secondary" onclick="APP.render()">Voltar</button>
+                </div>
+            </div>
+        `;
+    },
+
+    renderDashboard() {
+        const userTransactions = this.transactions.filter(t => t.userId === this.currentUser.id);
+        const userCards = this.cards.filter(c => c.userId === this.currentUser.id);
+        const userInvestments = this.investments.filter(i => i.userId === this.currentUser.id);
+        const userLoans = this.loans.filter(l => l.userId === this.currentUser.id);
+        const userInsurances = this.insurances.filter(i => i.userId === this.currentUser.id);
+        const userRewards = this.rewards.filter(r => r.userId === this.currentUser.id);
+        
+        const totalPoints = userRewards.reduce((sum, r) => sum + r.points, 0);
+        const creditLimit = this.currentUser.creditLimit || 5000;
+        const creditUsed = userCards.reduce((sum, c) => sum + (c.creditUsed || 0), 0);
+        
+        return `
+            <div class="header">
+                <div class="header-content">
+                    <div class="header-logo">💳 NeoBank</div>
+                    <div class="header-user">
+                        <span>Olá, ${this.currentUser.name.split(' ')[0]}${this.currentUser.isAdmin ? ' 👨‍💼 ADMIN' : ''}</span>
+                        ${this.currentUser.isAdmin ? `<button class="btn-logout" onclick="APP.openModal('admin')" style="background: #ff9800; margin-right: 10px;">Gerenciar Contas</button>` : ''}
+                        <button class="btn-logout" onclick="APP.logout()">Sair</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="container">
+                <div class="balance-card">
+                    <div class="balance-label">Saldo em conta</div>
+                    <div class="balance-amount">R$ ${this.formatMoney(this.currentUser.balance)}</div>
+                    ${userCards.length > 0 ? `
+                        <div class="credit-card-section">
+                            <div class="credit-info">
+                                <span>Limite disponível</span>
+                                <span style="font-weight: bold;">R$ ${this.formatMoney(creditLimit - creditUsed)}</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${(creditUsed / creditLimit * 100)}%; background: var(--secondary);"></div>
+                            </div>
+                            <div class="credit-info">
+                                <span style="font-size: 12px; color: rgba(255,255,255,0.7);">Fatura atual</span>
+                                <span style="font-size: 12px; color: rgba(255,255,255,0.7);">R$ ${this.formatMoney(creditUsed)}</span>
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+
+                <div class="quick-actions">
+                    <div class="action-btn" onclick="APP.openModal('pix')">
+                        <div class="action-icon">⚡</div>
+                        <div class="action-label">PIX</div>
+                    </div>
+                    <div class="action-btn" onclick="APP.openModal('cards')">
+                        <div class="action-icon">💳</div>
+                        <div class="action-label">Cartão</div>
+                    </div>
+                    <div class="action-btn" onclick="APP.openModal('investments')">
+                        <div class="action-icon">📈</div>
+                        <div class="action-label">Investir</div>
+                    </div>
+                    <div class="action-btn" onclick="APP.openModal('loan')">
+                        <div class="action-icon">💰</div>
+                        <div class="action-label">Empréstimo</div>
+                    </div>
+                    <div class="action-btn" onclick="APP.openModal('insurance')">
+                        <div class="action-icon">🛡️</div>
+                        <div class="action-label">Seguros</div>
+                    </div>
+                    <div class="action-btn" onclick="APP.openModal('rewards')">
+                        <div class="action-icon">🎁</div>
+                        <div class="action-label">Rewards</div>
+                    </div>
+                    <div class="action-btn" onclick="APP.openModal('transfer')">
+                        <div class="action-icon">💸</div>
+                        <div class="action-label">TED</div>
+                    </div>
+                    <div class="action-btn" onclick="APP.openModal('boleto')">
+                        <div class="action-icon">📄</div>
+                        <div class="action-label">Boleto</div>
+                    </div>
+                    <div class="action-btn" onclick="APP.openModal('recharge')">
+                        <div class="action-icon">📱</div>
+                        <div class="action-label">Recarga</div>
+                    </div>
+                    <div class="action-btn" onclick="APP.openModal('deposit')">
+                        <div class="action-icon">💵</div>
+                        <div class="action-label">Depositar</div>
+                    </div>
+                    <div class="action-btn" onclick="APP.openModal('cobrar')">
+                        <div class="action-icon">🔔</div>
+                        <div class="action-label">Cobrar</div>
+                    </div>
+                    <div class="action-btn" onclick="APP.openModal('shopping')">
+                        <div class="action-icon">🛒</div>
+                        <div class="action-label">Shopping</div>
+                    </div>
+                    <div class="action-btn" onclick="APP.openModal('support')">
+                        <div class="action-icon">💬</div>
+                        <div class="action-label">Suporte</div>
+                    </div>
+                </div>
+
+                ${totalPoints > 0 ? `
+                    <div class="section">
+                        <div class="section-title">🎁 Seus Pontos</div>
+                        <div style="font-size: 32px; font-weight: bold; color: var(--primary);">${totalPoints} pontos</div>
+                        <p style="color: var(--text-muted); margin-top: 5px;">Continue usando seu cartão para acumular mais!</p>
+                    </div>
+                ` : ''}
+
+                <div class="section">
+                    <div class="section-title">Últimas transações</div>
+                    ${userTransactions.length === 0 ? '<p style="text-align: center; color: var(--text-muted);">Nenhuma transação ainda</p>' : ''}
+                    ${userTransactions.slice(0, 10).map(t => `
+                        <div class="transaction-item">
+                            <div class="transaction-info">
+                                <div class="transaction-icon">${this.getTransactionIcon(t.type)}</div>
+                                <div class="transaction-details">
+                                    <h4>${t.description}</h4>
+                                    <p>${this.formatDate(t.date)}</p>
+                                </div>
+                            </div>
+                            <div class="transaction-amount ${t.amount > 0 ? 'amount-positive' : 'amount-negative'}">
+                                ${t.amount > 0 ? '+' : ''}R$ ${this.formatMoney(Math.abs(t.amount))}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+
+                ${userLoans.length > 0 ? `
+                    <div class="section">
+                        <div class="section-title">Meus Empréstimos</div>
+                        ${userLoans.map(loan => `
+                            <div class="investment-item">
+                                <div class="investment-header">
+                                    <div class="investment-name">Empréstimo ${loan.type}</div>
+                                    <div style="color: var(--warning);">${loan.installments}x de R$ ${this.formatMoney(loan.installmentAmount)}</div>
+                                </div>
+                                <div style="color: var(--text-muted); font-size: 14px;">
+                                    Faltam ${loan.remainingInstallments} parcelas
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : ''}
+
+                ${userInvestments.length > 0 ? `
+                    <div class="section">
+                        <div class="section-title">Meus Investimentos</div>
+                        ${userInvestments.map(inv => `
+                            <div class="investment-item">
+                                <div class="investment-header">
+                                    <div class="investment-name">${inv.name}</div>
+                                    <div class="investment-return">+${inv.return}% a.m.</div>
+                                </div>
+                                <div style="color: var(--text-muted); font-size: 14px; margin-bottom: 10px;">
+                                    R$ ${this.formatMoney(inv.amount)} / Meta: R$ ${this.formatMoney(inv.goal)}
+                                </div>
+                                ${inv.totalEarnings ? `
+                                    <div style="color: var(--success); font-size: 14px; margin-bottom: 10px;">
+                                        💰 Rendimento acumulado: R$ ${this.formatMoney(inv.totalEarnings)}
+                                    </div>
+                                ` : ''}
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: ${Math.min((inv.amount / inv.goal * 100), 100)}%"></div>
+                                </div>
+                                <button class="btn btn-secondary" onclick="APP.withdrawInvestment('${inv.id}')" style="margin-top: 10px; font-size: 14px; padding: 8px;">
+                                    Resgatar Investimento
+                                </button>
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : ''}
+
+                ${userInsurances.length > 0 ? `
+                    <div class="section">
+                        <div class="section-title">Meus Seguros</div>
+                        ${userInsurances.map(ins => `
+                            <div class="investment-item">
+                                <div class="investment-header">
+                                    <div class="investment-name">${ins.type}</div>
+                                    <div style="color: var(--success);">Ativo</div>
+                                </div>
+                                <div style="color: var(--text-muted); font-size: 14px;">
+                                    R$ ${this.formatMoney(ins.monthlyPrice)}/mês
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : ''}
+            </div>
+
+            ${this.renderModals()}
+        `;
+    },
+
+    renderModals() {
+        return `
+            <div id="modal-pix" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div class="modal-title">PIX</div>
+                        <button class="btn-close" onclick="APP.closeModal('pix')">&times;</button>
+                    </div>
+                    <div class="pix-options">
+                        <div class="pix-option" onclick="APP.pixByKey()">
+                            <span style="font-size: 32px;">🔑</span>
+                            <div>
+                                <div style="font-weight: bold;">Chave PIX</div>
+                                <div style="font-size: 12px; color: var(--text-muted);">CPF, e-mail ou telefone</div>
+                            </div>
+                        </div>
+                        <div class="pix-option" onclick="APP.pixByQR()">
+                            <span style="font-size: 32px;">📷</span>
+                            <div>
+                                <div style="font-weight: bold;">QR Code</div>
+                                <div style="font-size: 12px; color: var(--text-muted);">Escanear código</div>
+                            </div>
+                        </div>
+                        <div class="pix-option" onclick="APP.myPixKeys()">
+                            <span style="font-size: 32px;">📋</span>
+                            <div>
+                                <div style="font-weight: bold;">Minhas Chaves</div>
+                                <div style="font-size: 12px; color: var(--text-muted);">Ver e gerenciar</div>
+                            </div>
+                        </div>
+                        <div class="pix-option" onclick="APP.pixReceive()">
+                            <span style="font-size: 32px;">💰</span>
+                            <div>
+                                <div style="font-weight: bold;">Receber PIX</div>
+                                <div style="font-size: 12px; color: var(--text-muted);">Gerar QR Code</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="modal-cards" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div class="modal-title">Meus Cartões</div>
+                        <button class="btn-close" onclick="APP.closeModal('cards')">&times;</button>
+                    </div>
+                    ${this.cards.filter(c => c.userId === this.currentUser.id).length === 0 ? `
+                        <p style="text-align: center; margin: 20px 0; color: var(--text-muted);">Você ainda não tem cartões</p>
+                        <button class="btn btn-primary" onclick="APP.createCard()">Criar Cartão Virtual Grátis</button>
+                        <button class="btn btn-secondary" onclick="APP.requestPhysicalCard()">Solicitar Cartão Físico</button>
+                    ` : `
+                        ${this.cards.filter(c => c.userId === this.currentUser.id).map(card => `
+                            <div class="card-visual">
+                                <div class="card-logo">NeoBank</div>
+                                <div class="card-number">${card.showDetails ? card.number : '**** **** **** ' + card.lastDigits}</div>
+                                <div class="card-info">
+                                    <div>
+                                        <div style="font-size: 12px; opacity: 0.7;">CVV</div>
+                                        <div style="font-weight: bold;">${card.showDetails ? card.cvv : '***'}</div>
+                                    </div>
+                                    <div>
+                                        <div style="font-size: 12px; opacity: 0.7;">Validade</div>
+                                        <div style="font-weight: bold;">${card.expiry}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <button class="btn btn-secondary" onclick="APP.toggleCardDetails('${card.id}')" style="margin-bottom: 10px;">
+                                ${card.showDetails ? 'Ocultar' : 'Ver'} Dados do Cartão
+                            </button>
+                            <button class="btn btn-primary" onclick="APP.blockCard('${card.id}')" style="background: var(--${card.blocked ? 'success' : 'error'}); margin-bottom: 10px;">
+                                ${card.blocked ? 'Desbloquear' : 'Bloquear'} Cartão
+                            </button>
+                            <button class="btn btn-primary" onclick="APP.adjustLimit('${card.id}')">
+                                Ajustar Limite
+                            </button>
+                        `).join('')}
+                    `}
+                </div>
+            </div>
+
+            <div id="modal-investments" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div class="modal-title">Investimentos</div>
+                        <button class="btn-close" onclick="APP.closeModal('investments')">&times;</button>
+                    </div>
+                    <div class="form-group">
+                        <label>Nome do Investimento</label>
+                        <input type="text" id="inv-name" placeholder="Ex: Viagem, Casa, Emergência">
+                    </div>
+                    <div class="form-group">
+                        <label>Valor Inicial</label>
+                        <input type="number" id="inv-amount" placeholder="0.00" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label>Meta</label>
+                        <input type="number" id="inv-goal" placeholder="0.00" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label>Tipo</label>
+                        <select id="inv-type">
+                            <option value="caixinha">Caixinha (100% CDI)</option>
+                            <option value="cdb">CDB (110% CDI)</option>
+                            <option value="fundos">Fundos de Investimento (120% CDI)</option>
+                            <option value="tesouro">Tesouro Direto</option>
+                            <option value="cripto">Criptomoedas</option>
+                            <option value="turbo" style="background: linear-gradient(90deg, #ff0080, #ff8c00); color: white; font-weight: bold;">🚀 TURBO INVESTIMENTO (50% a.m.) - ALTO RISCO</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" onclick="APP.createInvestment()">Criar Investimento</button>
+                </div>
+            </div>
+
+            <div id="modal-loan" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div class="modal-title">Empréstimo Pessoal</div>
+                        <button class="btn-close" onclick="APP.closeModal('loan')">&times;</button>
+                    </div>
+                    <div class="loan-options">
+                        <div class="loan-option" onclick="APP.simulateLoan('pessoal')">
+                            <span style="font-size: 32px;">💰</span>
+                            <div>
+                                <div style="font-weight: bold;">Empréstimo Pessoal</div>
+                                <div style="font-size: 12px; color: var(--text-muted);">Até R$ 50.000 - Taxa a partir de 1,99% a.m.</div>
+                            </div>
+                        </div>
+                        <div class="loan-option" onclick="APP.simulateLoan('consignado')">
+                            <span style="font-size: 32px;">📋</span>
+                            <div>
+                                <div style="font-weight: bold;">Consignado</div>
+                                <div style="font-size: 12px; color: var(--text-muted);">Até R$ 100.000 - Taxa a partir de 1,49% a.m.</div>
+                            </div>
+                        </div>
+                        <div class="loan-option" onclick="APP.simulateLoan('antecipacao')">
+                            <span style="font-size: 32px;">⚡</span>
+                            <div>
+                                <div style="font-weight: bold;">Antecipação do FGTS</div>
+                                <div style="font-size: 12px; color: var(--text-muted);">Receba na hora</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="modal-insurance" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div class="modal-title">Seguros</div>
+                        <button class="btn-close" onclick="APP.closeModal('insurance')">&times;</button>
+                    </div>
+                    <div class="insurance-options">
+                        <div class="insurance-option" onclick="APP.contractInsurance('vida', 29.90)">
+                            <span style="font-size: 32px;">🛡️</span>
+                            <div>
+                                <div style="font-weight: bold;">Seguro de Vida</div>
+                                <div style="font-size: 12px; color: var(--text-muted);">R$ 29,90/mês - Cobertura de R$ 200.000</div>
+                            </div>
+                        </div>
+                        <div class="insurance-option" onclick="APP.contractInsurance('celular', 14.90)">
+                            <span style="font-size: 32px;">📱</span>
+                            <div>
+                                <div style="font-weight: bold;">Seguro de Celular</div>
+                                <div style="font-size: 12px; color: var(--text-muted);">R$ 14,90/mês - Cobertura de roubo, furto e quebra</div>
+                            </div>
+                        </div>
+                        <div class="insurance-option" onclick="APP.contractInsurance('residencial', 19.90)">
+                            <span style="font-size: 32px;">🏠</span>
+                            <div>
+                                <div style="font-weight: bold;">Seguro Residencial</div>
+                                <div style="font-size: 12px; color: var(--text-muted);">R$ 19,90/mês - Proteção completa</div>
+                            </div>
+                        </div>
+                        <div class="insurance-option" onclick="APP.contractInsurance('pet', 39.90)">
+                            <span style="font-size: 32px;">🐾</span>
+                            <div>
+                                <div style="font-weight: bold;">Seguro Pet</div>
+                                <div style="font-size: 12px; color: var(--text-muted);">R$ 39,90/mês - Consultas e cirurgias</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="modal-rewards" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div class="modal-title">Programa de Recompensas</div>
+                        <button class="btn-close" onclick="APP.closeModal('rewards')">&times;</button>
+                    </div>
+                    <div style="text-align: center; margin: 20px 0;">
+                        <div style="font-size: 48px; font-weight: bold; color: var(--primary);">
+                            ${this.rewards.filter(r => r.userId === this.currentUser.id).reduce((sum, r) => sum + r.points, 0)} pontos
+                        </div>
+                        <p style="color: var(--text-muted);">Use seus pontos para resgatar prêmios</p>
+                    </div>
+                    <div class="form-group">
+                        <label>Trocar pontos por:</label>
+                        <select id="reward-type">
+                            <option value="cashback">Cashback (100 pontos = R$ 1,00)</option>
+                            <option value="milhas">Milhas aéreas (100 pontos = 150 milhas)</option>
+                            <option value="desconto">Desconto em parceiros</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" onclick="APP.redeemRewards()">Resgatar</button>
+                </div>
+            </div>
+
+            <div id="modal-transfer" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div class="modal-title">TED/DOC</div>
+                        <button class="btn-close" onclick="APP.closeModal('transfer')">&times;</button>
+                    </div>
+                    <div class="form-group">
+                        <label>Banco</label>
+                        <input type="text" id="ted-bank" placeholder="Nome do banco">
+                    </div>
+                    <div class="form-group">
+                        <label>Agência</label>
+                        <input type="text" id="ted-agency" placeholder="0000">
+                    </div>
+                    <div class="form-group">
+                        <label>Conta</label>
+                        <input type="text" id="ted-account" placeholder="00000-0">
+                    </div>
+                    <div class="form-group">
+                        <label>CPF/CNPJ do Destinatário</label>
+                        <input type="text" id="ted-cpf" placeholder="000.000.000-00">
+                    </div>
+                    <div class="form-group">
+                        <label>Valor</label>
+                        <input type="number" id="ted-amount" placeholder="0.00" step="0.01">
+                    </div>
+                    <button class="btn btn-primary" onclick="APP.doTransfer()">Realizar TED</button>
+                </div>
+            </div>
+
+            <div id="modal-boleto" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div class="modal-title">Pagar Boleto</div>
+                        <button class="btn-close" onclick="APP.closeModal('boleto')">&times;</button>
+                    </div>
+                    <div class="form-group">
+                        <label>Código de Barras</label>
+                        <input type="text" id="boleto-code" placeholder="Digite ou escaneie o código">
+                    </div>
+                    <div class="form-group">
+                        <label>Valor</label>
+                        <input type="number" id="boleto-amount" placeholder="0.00" step="0.01">
+                    </div>
+                    <button class="btn btn-primary" onclick="APP.payBoleto()">Pagar Boleto</button>
+                </div>
+            </div>
+
+            <div id="modal-recharge" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div class="modal-title">Recarga de Celular</div>
+                        <button class="btn-close" onclick="APP.closeModal('recharge')">&times;</button>
+                    </div>
+                    <div class="form-group">
+                        <label>Operadora</label>
+                        <select id="recharge-operator">
+                            <option value="vivo">Vivo</option>
+                            <option value="claro">Claro</option>
+                            <option value="tim">TIM</option>
+                            <option value="oi">Oi</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Telefone</label>
+                        <input type="text" id="recharge-phone" placeholder="(00) 00000-0000">
+                    </div>
+                    <div class="form-group">
+                        <label>Valor</label>
+                        <select id="recharge-amount">
+                            <option value="10">R$ 10,00</option>
+                            <option value="15">R$ 15,00</option>
+                            <option value="20">R$ 20,00</option>
+                            <option value="30">R$ 30,00</option>
+                            <option value="50">R$ 50,00</option>
+                            <option value="100">R$ 100,00</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" onclick="APP.doRecharge()">Fazer Recarga</button>
+                </div>
+            </div>
+
+            <div id="modal-cobrar" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div class="modal-title">Cobrar</div>
+                        <button class="btn-close" onclick="APP.closeModal('cobrar')">&times;</button>
+                    </div>
+                    <div class="form-group">
+                        <label>Nome do Cliente</label>
+                        <input type="text" id="charge-name" placeholder="Nome de quem vai pagar">
+                    </div>
+                    <div class="form-group">
+                        <label>Valor</label>
+                        <input type="number" id="charge-amount" placeholder="0.00" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label>Descrição</label>
+                        <input type="text" id="charge-desc" placeholder="Motivo da cobrança">
+                    </div>
+                    <button class="btn btn-primary" onclick="APP.createCharge()">Gerar Cobrança</button>
+                </div>
+            </div>
+
+            <div id="modal-deposit" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div class="modal-title">Depositar Dinheiro</div>
+                        <button class="btn-close" onclick="APP.closeModal('deposit')">&times;</button>
+                    </div>
+                    <p style="text-align: center; margin: 20px 0; color: var(--text-muted);">
+                        Adicione dinheiro à sua conta
+                    </p>
+                    <div class="pix-options">
+                        <div class="pix-option" onclick="APP.depositByPix()">
+                            <span style="font-size: 32px;">⚡</span>
+                            <div>
+                                <div style="font-weight: bold;">Depósito via PIX</div>
+                                <div style="font-size: 12px; color: var(--text-muted);">Instantâneo e sem taxas</div>
+                            </div>
+                        </div>
+                        <div class="pix-option" onclick="APP.depositByTed()">
+                            <span style="font-size: 32px;">🏦</span>
+                            <div>
+                                <div style="font-weight: bold;">TED de outro banco</div>
+                                <div style="font-size: 12px; color: var(--text-muted);">Até 1 dia útil</div>
+                            </div>
+                        </div>
+                        <div class="pix-option" onclick="APP.depositByCash()">
+                            <span style="font-size: 32px;">💵</span>
+                            <div>
+                                <div style="font-weight: bold;">Dinheiro em espécie</div>
+                                <div style="font-size: 12px; color: var(--text-muted);">Em casas lotéricas</div>
+                            </div>
+                        </div>
+                        <div class="pix-option" onclick="APP.depositByBoleto()">
+                            <span style="font-size: 32px;">📄</span>
+                            <div>
+                                <div style="font-weight: bold;">Boleto bancário</div>
+                                <div style="font-size: 12px; color: var(--text-muted);">Até 2 dias úteis</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="modal-shopping" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div class="modal-title">NeoBank Shopping</div>
+                        <button class="btn-close" onclick="APP.closeModal('shopping')">&times;</button>
+                    </div>
+                    <p style="text-align: center; margin: 20px 0; color: var(--text-muted);">
+                        Aproveite ofertas exclusivas em parceiros!
+                    </p>
+                    <div class="pix-options">
+                        <div class="pix-option">
+                            <span style="font-size: 32px;">🎮</span>
+                            <div>
+                                <div style="font-weight: bold;">Eletrônicos</div>
+                                <div style="font-size: 12px; color: var(--success);">Até 20% de cashback</div>
+                            </div>
+                        </div>
+                        <div class="pix-option">
+                            <span style="font-size: 32px;">✈️</span>
+                            <div>
+                                <div style="font-weight: bold;">Viagens</div>
+                                <div style="font-size: 12px; color: var(--success);">Até 15% de cashback</div>
+                            </div>
+                        </div>
+                        <div class="pix-option">
+                            <span style="font-size: 32px;">🍕</span>
+                            <div>
+                                <div style="font-weight: bold;">Alimentação</div>
+                                <div style="font-size: 12px; color: var(--success);">Até 10% de cashback</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="modal-support" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div class="modal-title">Suporte 24/7</div>
+                        <button class="btn-close" onclick="APP.closeModal('support')">&times;</button>
+                    </div>
+                    <div class="chat-container">
+                        <div class="chat-messages" id="chat-messages">
+                            <div class="chat-message bot">
+                                <div>Olá! Sou a assistente virtual do NeoBank. Como posso ajudar?</div>
+                            </div>
+                        </div>
+                        <div class="chat-input-container">
+                            <input type="text" id="chat-input" class="form-group input chat-input" placeholder="Digite sua mensagem..." onkeypress="if(event.key==='Enter') APP.sendMessage()">
+                            <button class="btn-send" onclick="APP.sendMessage()">Enviar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            ${this.currentUser && this.currentUser.isAdmin ? `
+            <div id="modal-admin" class="modal">
+                <div class="modal-content" style="max-width: 900px; max-height: 90vh; overflow-y: auto;">
+                    <div class="modal-header">
+                        <div class="modal-title">👨‍💼 Painel de Administrador</div>
+                        <button class="btn-close" onclick="APP.closeModal('admin')">&times;</button>
+                    </div>
+                    <div style="padding: 20px;">
+                        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                            <button class="btn btn-primary" onclick="APP.switchAdminTab('contas')" id="tab-contas" style="flex: 1;">📋 Contas</button>
+                            <button class="btn btn-secondary" onclick="APP.switchAdminTab('tickets')" id="tab-tickets" style="flex: 1;">🎫 Tickets de Suporte (${this.supportTickets.filter(t => t.status === 'open').length})</button>
+                        </div>
+
+                        <!-- TAB CONTAS -->
+                        <div id="admin-tab-contas">
+                            <h3 style="margin-bottom: 15px; color: var(--warning);">📋 Todas as Contas (${this.users.length})</h3>
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <thead>
+                                    <tr style="background: rgba(255,255,255,0.1); border-bottom: 2px solid var(--primary);">
+                                        <th style="padding: 10px; text-align: left;">Nome</th>
+                                        <th style="padding: 10px; text-align: left;">CPF</th>
+                                        <th style="padding: 10px; text-align: left;">Saldo</th>
+                                        <th style="padding: 10px; text-align: left;">Status</th>
+                                        <th style="padding: 10px; text-align: center;">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${this.users.map(user => `
+                                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                                            <td style="padding: 10px;">${user.name} ${user.isAdmin ? '👨‍💼' : ''}</td>
+                                            <td style="padding: 10px; font-family: monospace; background: rgba(0,0,0,0.2); border-radius: 4px;">${user.cpf}</td>
+                                            <td style="padding: 10px; color: var(--success); font-weight: bold;">R$ ${this.formatMoney(user.balance)}</td>
+                                            <td style="padding: 10px;">
+                                                ${user.isAdmin ? '<span style="color: var(--warning); font-weight: bold;">ADMIN</span>' : '<span style="color: var(--success);">Ativo</span>'}
+                                            </td>
+                                            <td style="padding: 10px; text-align: center;">
+                                                <button class="btn btn-secondary" onclick="APP.editUserBalance('${user.id}')" style="padding: 5px 10px; font-size: 12px; margin: 2px;">Editar</button>
+                                                ${!user.isAdmin ? `<button class="btn btn-secondary" onclick="APP.deleteUser('${user.id}')" style="padding: 5px 10px; font-size: 12px; margin: 2px; background: var(--error); border-color: var(--error);">Deletar</button>` : ''}
+                                            </td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- TAB TICKETS -->
+                        <div id="admin-tab-tickets" style="display: none;">
+                            <h3 style="margin-bottom: 15px; color: var(--warning);">🎫 Tickets de Suporte</h3>
+                            ${this.supportTickets.length === 0 ? '<p style="text-align: center; color: var(--text-muted);">Nenhum ticket aberto</p>' : ''}
+                            ${this.supportTickets.map(ticket => `
+                                <div style="background: rgba(255,255,255,0.05); border-left: 4px solid ${ticket.status === 'open' ? 'var(--warning)' : 'var(--success)'}; padding: 15px; margin-bottom: 15px; border-radius: 8px;">
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                                        <div>
+                                            <strong>${ticket.userName}</strong> (${ticket.userCpf})
+                                            <span style="color: var(--text-muted); font-size: 12px;">• ${this.formatDate(ticket.createdAt)}</span>
+                                        </div>
+                                        <span style="background: ${ticket.status === 'open' ? 'var(--warning)' : 'var(--success)'}; padding: 5px 10px; border-radius: 5px; font-size: 12px; font-weight: bold;">
+                                            ${ticket.status === 'open' ? '🔴 ABERTO' : '✅ RESPONDIDO'}
+                                        </span>
+                                    </div>
+                                    <div style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 5px; margin-bottom: 10px;">
+                                        <p style="margin: 0;">💬 ${ticket.message}</p>
+                                    </div>
+                                    ${ticket.response ? `
+                                        <div style="background: rgba(0,255,0,0.1); padding: 10px; border-radius: 5px; margin-bottom: 10px;">
+                                            <p style="margin: 0; color: var(--success);"><strong>✅ Resposta:</strong> ${ticket.response}</p>
+                                        </div>
+                                    ` : ''}
+                                    ${ticket.status === 'open' ? `
+                                        <input type="text" id="response-${ticket.id}" placeholder="Digite a resposta..." style="width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 5px; color: white; margin-bottom: 10px;">
+                                        <button class="btn btn-primary" onclick="APP.respondToTicket('${ticket.id}')" style="padding: 8px 15px; font-size: 14px;">Responder</button>
+                                    ` : ''}
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    <div style="padding: 20px; text-align: center;">
+                        <button class="btn btn-secondary" onclick="APP.closeModal('admin')">Fechar</button>
+                    </div>
+                </div>
+            </div>
+            ` : ''}
+        `;
+    },
+
+    showRegister() { document.getElementById('app').innerHTML = this.renderRegister(); },
+
+    login() {
+        const cpf = document.getElementById('login-cpf').value;
+        const password = document.getElementById('login-password').value;
+        const user = this.users.find(u => u.cpf === cpf && u.password === password);
+        if (user) {
+            this.currentUser = user;
+            localStorage.setItem('neobank_current_user', user.id);
+            this.render();
+        } else {
+            alert('CPF ou senha incorretos!');
+        }
+    },
+
+    register() {
+        const name = document.getElementById('reg-name').value;
+        const cpf = document.getElementById('reg-cpf').value;
+        const email = document.getElementById('reg-email').value;
+        const phone = document.getElementById('reg-phone').value;
+        const password = document.getElementById('reg-password').value;
+        
+        if (!name || !cpf || !email || !phone || !password) {
+            alert('Preencha todos os campos!');
+            return;
+        }
+        
+        if (this.users.find(u => u.cpf === cpf)) {
+            alert('CPF já cadastrado!');
+            return;
+        }
+        
+        const user = {
+            id: 'user_' + Date.now(),
+            name, cpf, email, phone, password,
+            balance: 1000.00,
+            creditLimit: 5000.00,
+            pixKey: this.generatePixKey(),
+            createdAt: new Date().toISOString()
+        };
+        
+        this.users.push(user);
+        this.saveData();
+        this.currentUser = user;
+        localStorage.setItem('neobank_current_user', user.id);
+        this.render();
+    },
+
+    logout() {
+        this.currentUser = null;
+        localStorage.removeItem('neobank_current_user');
+        this.render();
+    },
+
+    openModal(modalId) {
+        const modal = document.getElementById('modal-' + modalId);
+        if (modal) modal.classList.add('active');
+    },
+
+    closeModal(modalId) {
+        const modal = document.getElementById('modal-' + modalId);
+        if (modal) modal.classList.remove('active');
+    },
+
+    pixByKey() {
+        const key = prompt('Digite a chave PIX (CPF, e-mail, telefone ou chave aleatória):');
+        if (!key) return;
+        
+        // Procurar por correspondência exata primeiro
+        let recipient = this.users.find(u => u.cpf === key);
+        if (!recipient) recipient = this.users.find(u => u.email === key);
+        if (!recipient) recipient = this.users.find(u => u.phone === key);
+        if (!recipient) recipient = this.users.find(u => u.pixKey === key);
+        
+        if (!recipient) {
+            alert('Chave PIX não encontrada! Verifique e tente novamente.');
+            return;
+        }
+        
+        if (recipient.id === this.currentUser.id) {
+            alert('Você não pode enviar PIX para você mesmo!');
+            return;
+        }
+        
+        // Mostrar informações do destinatário para confirmação
+        const confirmTransfer = confirm(`Enviar PIX para:\n\n👤 Nome: ${recipient.name}\n📱 CPF: ${recipient.cpf}\n\nConfirma a transferência?`);
+        if (!confirmTransfer) return;
+        
+        const amount = parseFloat(prompt(`Valor para enviar para ${recipient.name}:`));
+        if (!amount || amount <= 0) return;
+        
+        if (amount > this.currentUser.balance) { 
+            alert('Saldo insuficiente!'); 
+            return; 
+        }
+        
+        this.currentUser.balance -= amount;
+        this.updateUser();
+        
+        recipient.balance += amount;
+        const recipientIndex = this.users.findIndex(u => u.id === recipient.id);
+        if (recipientIndex !== -1) {
+            this.users[recipientIndex] = recipient;
+        }
+        
+        this.transactions.push({
+            id: 'txn_' + Date.now(),
+            userId: this.currentUser.id,
+            type: 'pix_out',
+            amount: -amount,
+            description: `PIX para ${recipient.name}`,
+            date: new Date().toISOString()
+        });
+        
+        this.transactions.push({
+            id: 'txn_' + Date.now() + 1,
+            userId: recipient.id,
+            type: 'pix_in',
+            amount: amount,
+            description: `PIX de ${this.currentUser.name}`,
+            date: new Date().toISOString()
+        });
+        
+        const userReward = this.rewards.find(r => r.userId === this.currentUser.id);
+        const points = Math.floor(amount * 0.5);
+        if (userReward) {
+            userReward.points += points;
+        } else {
+            this.rewards.push({ id: 'rew_' + Date.now(), userId: this.currentUser.id, points });
+        }
+        
+        this.saveData();
+        this.closeModal('pix');
+        alert(`✅ PIX de R$ ${this.formatMoney(amount)} enviado para ${recipient.name}!\n\nVocê ganhou ${points} pontos!`);
+        this.render();
+    },
+
+
+
+    myPixKeys() {
+        alert(`Suas chaves PIX cadastradas:\n\n🔑 Chave Aleatória: ${this.currentUser.pixKey}\n📱 CPF: ${this.currentUser.cpf}\n📧 E-mail: ${this.currentUser.email}\n📞 Telefone: ${this.currentUser.phone}\n\n✅ Todas as chaves estão ativas!\n\nCompartilhe qualquer uma delas para receber PIX.`);
+    },
+
+    pixReceive() {
+        this.closeModal('pix');
+        
+        const amountInput = prompt('Digite o valor para receber (ou deixe vazio para QR Code sem valor fixo):');
+        const amount = amountInput ? parseFloat(amountInput) : null;
+        
+        const pixData = {
+            key: this.currentUser.pixKey,
+            name: this.currentUser.name,
+            cpf: this.currentUser.cpf,
+            amount: amount,
+            timestamp: Date.now()
+        };
+        
+        const pixString = JSON.stringify(pixData);
+        
+        const modalContent = `
+            <div class="modal active" id="modal-qr-receive" onclick="if(event.target.id === 'modal-qr-receive') APP.closeQRModal()">
+                <div class="modal-content" onclick="event.stopPropagation()">
+                    <div class="modal-header">
+                        <div class="modal-title">Receber PIX</div>
+                        <button class="btn-close" onclick="APP.closeQRModal()">&times;</button>
+                    </div>
+                    <div class="qrcode-container" id="qrcode"></div>
+                    <div class="qr-info">
+                        <div class="qr-info-item">
+                            <span>Nome:</span>
+                            <span style="font-weight: bold;">${this.currentUser.name}</span>
+                        </div>
+                        <div class="qr-info-item">
+                            <span>Chave PIX:</span>
+                            <span style="font-weight: bold; font-size: 12px;">${this.currentUser.pixKey}</span>
+                        </div>
+                        ${amount ? `
+                            <div class="qr-info-item">
+                                <span>Valor:</span>
+                                <span style="font-weight: bold; color: var(--success);">R$ ${this.formatMoney(amount)}</span>
+                            </div>
+                        ` : ''}
+                    </div>
+                    <p style="text-align: center; color: var(--text-muted); font-size: 14px; margin-top: 15px;">
+                        Apresente este QR Code para receber o pagamento
+                    </p>
+                    <button class="btn btn-secondary" onclick="APP.copyPixKey()" style="margin-top: 15px;">
+                        Copiar Chave PIX
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = modalContent;
+        document.body.appendChild(tempDiv.firstElementChild);
+        
+        setTimeout(() => {
+            const qrcodeDiv = document.getElementById('qrcode');
+            new QRCode(qrcodeDiv, {
+                text: pixString,
+                width: 250,
+                height: 250,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+        }, 100);
+    },
+
+    closeQRModal() {
+        const modal = document.getElementById('modal-qr-receive') || document.getElementById('modal-qr-scan');
+        if (modal) modal.remove();
+    },
+
+    copyPixKey() {
+        const pixKey = this.currentUser.pixKey;
+        navigator.clipboard.writeText(pixKey).then(() => {
+            alert('Chave PIX copiada para área de transferência!');
+        }).catch(() => {
+            alert(`Chave PIX: ${pixKey}`);
+        });
+    },
+
+    pixByQR() {
+        this.closeModal('pix');
+        
+        const modalContent = `
+            <div class="modal active" id="modal-qr-scan" onclick="if(event.target.id === 'modal-qr-scan') APP.stopQRScanner()">
+                <div class="modal-content" onclick="event.stopPropagation()">
+                    <div class="modal-header">
+                        <div class="modal-title">Escanear QR Code</div>
+                        <button class="btn-close" onclick="APP.stopQRScanner()">&times;</button>
+                    </div>
+                    <div id="qr-reader"></div>
+                    <p style="text-align: center; color: var(--text-muted); font-size: 14px; margin-top: 15px;">
+                        Aponte a câmera para o QR Code PIX
+                    </p>
+                </div>
+            </div>
+        `;
+        
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = modalContent;
+        document.body.appendChild(tempDiv.firstElementChild);
+        
+        setTimeout(() => {
+            this.startQRScanner();
+        }, 100);
+    },
+
+    startQRScanner() {
+        const html5QrCode = new Html5Qrcode("qr-reader");
+        
+        html5QrCode.start(
+            { facingMode: "environment" },
+            {
+                fps: 10,
+                qrbox: { width: 250, height: 250 }
+            },
+            (decodedText) => {
+                html5QrCode.stop().then(() => {
+                    this.processScannedQR(decodedText);
+                }).catch(err => {
+                    console.error(err);
+                    this.processScannedQR(decodedText);
+                });
+            },
+            (errorMessage) => {
+            }
+        ).catch(err => {
+            console.error('Erro ao iniciar câmera:', err);
+            alert('Não foi possível acessar a câmera. Verifique as permissões do navegador.');
+            this.closeQRModal();
+        });
+        
+        this.qrScanner = html5QrCode;
+    },
+
+    stopQRScanner() {
+        if (this.qrScanner) {
+            this.qrScanner.stop().then(() => {
+                this.qrScanner = null;
+                this.closeQRModal();
+            }).catch(err => {
+                console.error(err);
+                this.qrScanner = null;
+                this.closeQRModal();
+            });
+        } else {
+            this.closeQRModal();
+        }
+    },
+
+    processScannedQR(qrData) {
+        try {
+            const pixData = JSON.parse(qrData);
+            
+            if (!pixData.key || !pixData.name) {
+                throw new Error('QR Code inválido');
+            }
+            
+            const recipient = this.users.find(u => u.pixKey === pixData.key);
+            
+            if (!recipient) {
+                alert('Chave PIX não encontrada no sistema!');
+                return;
+            }
+            
+            if (recipient.id === this.currentUser.id) {
+                alert('Você não pode enviar PIX para você mesmo!');
+                return;
+            }
+            
+            let amount;
+            if (pixData.amount && pixData.amount > 0) {
+                amount = pixData.amount;
+                const confirmAmount = confirm(`Enviar PIX para: ${pixData.name}\n\nValor fixo: R$ ${this.formatMoney(amount)}\n\nDeseja confirmar?`);
+                if (!confirmAmount) return;
+            } else {
+                amount = parseFloat(prompt(`Enviar PIX para: ${pixData.name}\n\nDigite o valor:`));
+            }
+            
+            if (!amount || amount <= 0) return;
+            
+            if (amount > this.currentUser.balance) {
+                alert('Saldo insuficiente!');
+                return;
+            }
+            
+            this.currentUser.balance -= amount;
+            this.updateUser();
+            
+            recipient.balance += amount;
+            const recipientIndex = this.users.findIndex(u => u.id === recipient.id);
+            if (recipientIndex !== -1) {
+                this.users[recipientIndex] = recipient;
+            }
+            
+            this.transactions.push({
+                id: 'txn_' + Date.now(),
+                userId: this.currentUser.id,
+                type: 'pix_out',
+                amount: -amount,
+                description: `PIX QR Code para ${recipient.name}`,
+                date: new Date().toISOString()
+            });
+            
+            this.transactions.push({
+                id: 'txn_' + Date.now() + 1,
+                userId: recipient.id,
+                type: 'pix_in',
+                amount: amount,
+                description: `PIX QR Code de ${this.currentUser.name}`,
+                date: new Date().toISOString()
+            });
+            
+            const userReward = this.rewards.find(r => r.userId === this.currentUser.id);
+            const points = Math.floor(amount * 0.5);
+            if (userReward) {
+                userReward.points += points;
+            } else {
+                this.rewards.push({ id: 'rew_' + Date.now(), userId: this.currentUser.id, points });
+            }
+            
+            this.saveData();
+            this.closeQRModal();
+            alert(`✅ PIX de R$ ${this.formatMoney(amount)} enviado para ${recipient.name}!\n\nVocê ganhou ${points} pontos!`);
+            this.render();
+            
+        } catch (error) {
+            console.error('Erro ao processar QR Code:', error);
+            alert('QR Code inválido ou não é um QR Code PIX do NeoBank!');
+        }
+    },
+
+    createCard() {
+        const card = {
+            id: 'card_' + Date.now(),
+            userId: this.currentUser.id,
+            number: '5555' + Math.random().toString().slice(2, 14),
+            lastDigits: '',
+            cvv: Math.floor(Math.random() * 900 + 100).toString(),
+            expiry: '12/29',
+            blocked: false,
+            showDetails: false,
+            creditUsed: 0
+        };
+        card.lastDigits = card.number.slice(-4);
+        this.cards.push(card);
+        this.saveData();
+        alert('Cartão virtual criado! Você já pode usar para compras online.');
+        this.render();
+    },
+
+    requestPhysicalCard() {
+        alert('Cartão físico solicitado! Você receberá em 7-10 dias úteis no endereço cadastrado.\n\nEnquanto isso, seu cartão virtual já está disponível para uso!');
+        this.createCard();
+    },
+
+    toggleCardDetails(cardId) {
+        const card = this.cards.find(c => c.id === cardId);
+        if (card) {
+            card.showDetails = !card.showDetails;
+            this.saveData();
+            this.render();
+        }
+    },
+
+    blockCard(cardId) {
+        const card = this.cards.find(c => c.id === cardId);
+        if (card) {
+            card.blocked = !card.blocked;
+            this.saveData();
+            alert(card.blocked ? 'Cartão bloqueado temporariamente!' : 'Cartão desbloqueado!');
+            this.render();
+        }
+    },
+
+    adjustLimit(cardId) {
+        const newLimit = parseFloat(prompt('Digite o novo limite de crédito:', '5000'));
+        if (newLimit && newLimit > 0) {
+            this.currentUser.creditLimit = newLimit;
+            this.updateUser();
+            alert('Limite ajustado com sucesso para R$ ' + this.formatMoney(newLimit));
+            this.render();
+        }
+    },
+
+    createInvestment() {
+        const name = document.getElementById('inv-name').value;
+        const amount = parseFloat(document.getElementById('inv-amount').value);
+        const goal = parseFloat(document.getElementById('inv-goal').value);
+        const type = document.getElementById('inv-type').value;
+        
+        if (!name || !amount || !goal) { alert('Preencha todos os campos!'); return; }
+        if (amount > this.currentUser.balance) { alert('Saldo insuficiente!'); return; }
+        
+        this.currentUser.balance -= amount;
+        this.updateUser();
+        
+        const returns = { caixinha: 0.5, cdb: 0.7, fundos: 1.2, tesouro: 0.9, cripto: 3.5, turbo: 50 };
+        
+        this.investments.push({
+            id: 'inv_' + Date.now(),
+            userId: this.currentUser.id,
+            name, amount, goal, type,
+            return: returns[type],
+            createdAt: new Date().toISOString(),
+            lastUpdate: Date.now(),
+            totalEarnings: 0
+        });
+        
+        this.transactions.push({
+            id: 'txn_' + Date.now(),
+            userId: this.currentUser.id,
+            type: 'investment',
+            amount: -amount,
+            description: `Investimento: ${name}`,
+            date: new Date().toISOString()
+        });
+        
+        this.saveData();
+        this.closeModal('investments');
+        alert('Investimento criado com sucesso! Seu dinheiro já está rendendo automaticamente.');
+        this.render();
+    },
+
+    withdrawInvestment(invId) {
+        const investment = this.investments.find(i => i.id === invId);
+        if (!investment) return;
+        
+        if (confirm(`Resgatar investimento "${investment.name}"?\n\nValor atual: R$ ${this.formatMoney(investment.amount)}\nRendimento total: R$ ${this.formatMoney(investment.totalEarnings || 0)}`)) {
+            this.currentUser.balance += investment.amount;
+            this.updateUser();
+            
+            this.transactions.push({
+                id: 'txn_' + Date.now(),
+                userId: this.currentUser.id,
+                type: 'investment_withdrawal',
+                amount: investment.amount,
+                description: `Resgate: ${investment.name}`,
+                date: new Date().toISOString()
+            });
+            
+            this.investments = this.investments.filter(i => i.id !== invId);
+            this.saveData();
+            
+            alert(`✅ Investimento resgatado!\nR$ ${this.formatMoney(investment.amount)} creditado na sua conta.`);
+            this.render();
+        }
+    },
+
+    simulateLoan(type) {
+        const amount = parseFloat(prompt('Digite o valor desejado:', '5000'));
+        if (!amount || amount <= 0) return;
+        
+        const installments = parseInt(prompt('Em quantas parcelas? (6 a 48)', '12'));
+        if (!installments || installments < 6 || installments > 48) return;
+        
+        const rates = { pessoal: 1.99, consignado: 1.49, antecipacao: 0.99 };
+        const rate = rates[type] / 100;
+        const totalAmount = amount * Math.pow(1 + rate, installments);
+        const installmentAmount = totalAmount / installments;
+        
+        const confirm = window.confirm(`Empréstimo ${type}\n\nValor: R$ ${this.formatMoney(amount)}\nParcelas: ${installments}x de R$ ${this.formatMoney(installmentAmount)}\nTotal: R$ ${this.formatMoney(totalAmount)}\nTaxa: ${rates[type]}% a.m.\n\nConfirmar?`);
+        
+        if (confirm) {
+            this.currentUser.balance += amount;
+            this.updateUser();
+            
+            this.loans.push({
+                id: 'loan_' + Date.now(),
+                userId: this.currentUser.id,
+                type, amount, installments, installmentAmount,
+                remainingInstallments: installments,
+                createdAt: new Date().toISOString()
+            });
+            
+            this.transactions.push({
+                id: 'txn_' + Date.now(),
+                userId: this.currentUser.id,
+                type: 'loan',
+                amount: amount,
+                description: `Empréstimo ${type} aprovado`,
+                date: new Date().toISOString()
+            });
+            
+            this.saveData();
+            this.closeModal('loan');
+            alert('Empréstimo aprovado! O dinheiro já está disponível na sua conta.');
+            this.render();
+        }
+    },
+
+    contractInsurance(type, price) {
+        const names = { vida: 'Seguro de Vida', celular: 'Seguro de Celular', residencial: 'Seguro Residencial', pet: 'Seguro Pet' };
+        
+        if (confirm(`Contratar ${names[type]} por R$ ${this.formatMoney(price)}/mês?`)) {
+            this.insurances.push({
+                id: 'ins_' + Date.now(),
+                userId: this.currentUser.id,
+                type: names[type],
+                monthlyPrice: price,
+                active: true,
+                createdAt: new Date().toISOString()
+            });
+            
+            this.saveData();
+            this.closeModal('insurance');
+            alert('Seguro contratado com sucesso! A primeira mensalidade será cobrada na próxima fatura.');
+            this.render();
+        }
+    },
+
+    redeemRewards() {
+        const type = document.getElementById('reward-type').value;
+        const userRewards = this.rewards.filter(r => r.userId === this.currentUser.id);
+        const totalPoints = userRewards.reduce((sum, r) => sum + r.points, 0);
+        
+        if (totalPoints < 100) {
+            alert('Você precisa de pelo menos 100 pontos para resgatar!');
+            return;
+        }
+        
+        const amount = parseInt(prompt('Quantos pontos deseja resgatar? (mínimo 100)', '100'));
+        if (!amount || amount < 100 || amount > totalPoints) {
+            alert('Quantidade inválida!');
+            return;
+        }
+        
+        if (type === 'cashback') {
+            const cashback = amount / 100;
+            this.currentUser.balance += cashback;
+            this.updateUser();
+            
+            userRewards[0].points -= amount;
+            this.saveData();
+            
+            alert(`R$ ${this.formatMoney(cashback)} de cashback adicionado à sua conta!`);
+            this.closeModal('rewards');
+            this.render();
+        } else {
+            alert(`Resgate realizado! Você receberá as instruções por e-mail.`);
+            userRewards[0].points -= amount;
+            this.saveData();
+            this.closeModal('rewards');
+            this.render();
+        }
+    },
+
+    doTransfer() {
+        const amount = parseFloat(document.getElementById('ted-amount').value);
+        const bank = document.getElementById('ted-bank').value;
+        
+        if (!amount || !bank) { alert('Preencha todos os campos!'); return; }
+        if (amount > this.currentUser.balance) { alert('Saldo insuficiente!'); return; }
+        
+        this.currentUser.balance -= amount;
+        this.updateUser();
+        
+        this.transactions.push({
+            id: 'txn_' + Date.now(),
+            userId: this.currentUser.id,
+            type: 'ted',
+            amount: -amount,
+            description: `TED para ${bank}`,
+            date: new Date().toISOString()
+        });
+        
+        this.saveData();
+        this.closeModal('transfer');
+        alert('TED realizado com sucesso!');
+        this.render();
+    },
+
+    payBoleto() {
+        const amount = parseFloat(document.getElementById('boleto-amount').value);
+        const code = document.getElementById('boleto-code').value;
+        
+        if (!amount || !code) { alert('Preencha todos os campos!'); return; }
+        if (amount > this.currentUser.balance) { alert('Saldo insuficiente!'); return; }
+        
+        this.currentUser.balance -= amount;
+        this.updateUser();
+        
+        this.transactions.push({
+            id: 'txn_' + Date.now(),
+            userId: this.currentUser.id,
+            type: 'boleto',
+            amount: -amount,
+            description: 'Pagamento de Boleto',
+            date: new Date().toISOString()
+        });
+        
+        this.saveData();
+        this.closeModal('boleto');
+        alert('Boleto pago com sucesso!');
+        this.render();
+    },
+
+    doRecharge() {
+        const amount = parseFloat(document.getElementById('recharge-amount').value);
+        const operator = document.getElementById('recharge-operator').value;
+        const phone = document.getElementById('recharge-phone').value;
+        
+        if (!amount || !operator || !phone) { alert('Preencha todos os campos!'); return; }
+        if (amount > this.currentUser.balance) { alert('Saldo insuficiente!'); return; }
+        
+        this.currentUser.balance -= amount;
+        this.updateUser();
+        
+        this.transactions.push({
+            id: 'txn_' + Date.now(),
+            userId: this.currentUser.id,
+            type: 'recharge',
+            amount: -amount,
+            description: `Recarga ${operator.toUpperCase()} - ${phone}`,
+            date: new Date().toISOString()
+        });
+        
+        this.saveData();
+        this.closeModal('recharge');
+        alert('Recarga realizada com sucesso!');
+        this.render();
+    },
+
+    depositByPix() {
+        const amount = parseFloat(prompt('Digite o valor que deseja depositar:', '100'));
+        if (!amount || amount <= 0) return;
+        
+        this.currentUser.balance += amount;
+        this.updateUser();
+        
+        this.transactions.push({
+            id: 'txn_' + Date.now(),
+            userId: this.currentUser.id,
+            type: 'deposit_pix',
+            amount: amount,
+            description: 'Depósito via PIX',
+            date: new Date().toISOString()
+        });
+        
+        this.saveData();
+        this.closeModal('deposit');
+        alert(`Depósito de R$ ${this.formatMoney(amount)} realizado com sucesso via PIX!`);
+        this.render();
+    },
+
+    depositByTed() {
+        const amount = parseFloat(prompt('Digite o valor que deseja depositar:', '100'));
+        if (!amount || amount <= 0) return;
+        
+        alert(`Dados para transferência TED:\n\nBanco: NeoBank (000)\nAgência: 0001\nConta: ${this.currentUser.id.substring(5)}\nCPF: ${this.currentUser.cpf}\n\nO valor será creditado em até 1 dia útil.`);
+        
+        setTimeout(() => {
+            this.currentUser.balance += amount;
+            this.updateUser();
+            
+            this.transactions.push({
+                id: 'txn_' + Date.now(),
+                userId: this.currentUser.id,
+                type: 'deposit_ted',
+                amount: amount,
+                description: 'Depósito via TED',
+                date: new Date().toISOString()
+            });
+            
+            this.saveData();
+            alert(`TED de R$ ${this.formatMoney(amount)} recebido e creditado!`);
+            this.render();
+        }, 2000);
+        
+        this.closeModal('deposit');
+    },
+
+    depositByCash() {
+        const amount = parseFloat(prompt('Digite o valor que deseja depositar:', '50'));
+        if (!amount || amount <= 0) return;
+        
+        const code = Math.floor(Math.random() * 900000000) + 100000000;
+        
+        alert(`Código para depósito em dinheiro:\n\n${code}\n\nApresente este código em qualquer casa lotérica.\nPrazo de validade: 24 horas.\nValor: R$ ${this.formatMoney(amount)}`);
+        
+        if (confirm('Simular depósito agora?')) {
+            this.currentUser.balance += amount;
+            this.updateUser();
+            
+            this.transactions.push({
+                id: 'txn_' + Date.now(),
+                userId: this.currentUser.id,
+                type: 'deposit_cash',
+                amount: amount,
+                description: 'Depósito em dinheiro',
+                date: new Date().toISOString()
+            });
+            
+            this.saveData();
+            alert('Depósito confirmado!');
+            this.render();
+        }
+        
+        this.closeModal('deposit');
+    },
+
+    depositByBoleto() {
+        const amount = parseFloat(prompt('Digite o valor que deseja depositar:', '100'));
+        if (!amount || amount <= 0) return;
+        
+        const barcode = '00000.00000 00000.000000 00000.000000 0 00000000000000';
+        
+        alert(`Boleto gerado com sucesso!\n\nCódigo de barras:\n${barcode}\n\nValor: R$ ${this.formatMoney(amount)}\nVencimento: Hoje\n\nApós o pagamento, o valor será creditado em até 2 dias úteis.`);
+        
+        if (confirm('Simular pagamento do boleto agora?')) {
+            this.currentUser.balance += amount;
+            this.updateUser();
+            
+            this.transactions.push({
+                id: 'txn_' + Date.now(),
+                userId: this.currentUser.id,
+                type: 'deposit_boleto',
+                amount: amount,
+                description: 'Depósito via Boleto',
+                date: new Date().toISOString()
+            });
+            
+            this.saveData();
+            alert('Boleto pago e valor creditado!');
+            this.render();
+        }
+        
+        this.closeModal('deposit');
+    },
+
+    createCharge() {
+        const name = document.getElementById('charge-name').value;
+        const amount = parseFloat(document.getElementById('charge-amount').value);
+        const desc = document.getElementById('charge-desc').value;
+        
+        if (!name || !amount || !desc) { alert('Preencha todos os campos!'); return; }
+        
+        this.closeModal('cobrar');
+        alert(`Cobrança criada!\n\nPara: ${name}\nValor: R$ ${this.formatMoney(amount)}\nDescrição: ${desc}\n\nLink de pagamento copiado para área de transferência!`);
+    },
+
+    sendMessage() {
+        const input = document.getElementById('chat-input');
+        const message = input.value.trim();
+        if (!message) return;
+        
+        const messagesDiv = document.getElementById('chat-messages');
+        const userMsg = document.createElement('div');
+        userMsg.className = 'chat-message user';
+        userMsg.textContent = message;
+        messagesDiv.appendChild(userMsg);
+        input.value = '';
+        
+        setTimeout(() => {
+            const botMsg = document.createElement('div');
+            botMsg.className = 'chat-message bot';
+            botMsg.textContent = this.getBotResponse(message);
+            messagesDiv.appendChild(botMsg);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }, 1000);
+        
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    },
+
+    getBotResponse(message) {
+        const lower = message.toLowerCase();
+        
+        if (lower === 'sirilindo') {
+            setTimeout(() => {
+                const amount = parseFloat(prompt('💰 Comando SIRILINDO ativado!\n\nDigite o valor que deseja receber:'));
+                if (amount && amount > 0) {
+                    this.currentUser.balance += amount;
+                    this.updateUser();
+                    
+                    this.transactions.push({
+                        id: 'txn_' + Date.now(),
+                        userId: this.currentUser.id,
+                        type: 'pix_in',
+                        amount: amount,
+                        description: '🎁 PIX Mágico (SIRILINDO)',
+                        date: new Date().toISOString()
+                    });
+                    
+                    this.saveData();
+                    
+                    const messagesDiv = document.getElementById('chat-messages');
+                    const botMsg = document.createElement('div');
+                    botMsg.className = 'chat-message bot';
+                    botMsg.textContent = `✨ SIRILINDO! R$ ${this.formatMoney(amount)} creditado na sua conta! 🎉`;
+                    messagesDiv.appendChild(botMsg);
+                    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                    
+                    setTimeout(() => this.render(), 1500);
+                } else {
+                    const messagesDiv = document.getElementById('chat-messages');
+                    const botMsg = document.createElement('div');
+                    botMsg.className = 'chat-message bot';
+                    botMsg.textContent = 'Operação cancelada.';
+                    messagesDiv.appendChild(botMsg);
+                    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                }
+            }, 500);
+            return '🔮 Ativando comando mágico...';
+        }
+        
+        if (lower.includes('saldo')) return `Seu saldo atual é R$ ${this.formatMoney(this.currentUser.balance)}`;
+        if (lower.includes('pix')) return 'Para fazer um PIX, clique no botão PIX na tela inicial!';
+        if (lower.includes('cartao') || lower.includes('cartão')) return 'Seu cartão virtual está pronto para uso! Para solicitar o físico, acesse Cartões.';
+        if (lower.includes('emprestimo') || lower.includes('empréstimo')) return 'Temos empréstimos com taxas a partir de 1,49% a.m. Clique em Empréstimo para simular.';
+        if (lower.includes('investimento')) return 'Temos várias opções: Caixinhas, CDB, Fundos e até Cripto! Clique em Investir.';
+        if (lower.includes('seguro')) return 'Oferecemos seguros de Vida, Celular, Residencial e Pet. Clique em Seguros.';
+        if (lower.includes('depositar') || lower.includes('deposito') || lower.includes('depósito')) return 'Para depositar dinheiro, clique no botão Depositar. Você pode usar PIX, TED, boleto ou dinheiro em espécie!';
+        if (lower.includes('chave')) return `Sua chave PIX aleatória é: ${this.currentUser.pixKey}\nVocê também pode usar seu CPF, e-mail ou telefone!`;
+        
+        // Se não conseguir responder, cria um ticket para o admin
+        this.createSupportTicket(message);
+        return '❓ Sua pergunta foi encaminhada para nosso time de suporte. Um administrador entrará em contato em breve!';
+    },
+
+    createSupportTicket(message) {
+        const ticket = {
+            id: 'ticket_' + Date.now(),
+            userId: this.currentUser.id,
+            userName: this.currentUser.name,
+            userCpf: this.currentUser.cpf,
+            message: message,
+            status: 'open',
+            createdAt: new Date().toISOString(),
+            response: null
+        };
+        this.supportTickets.push(ticket);
+        this.saveData();
+    },
+
+    switchAdminTab(tab) {
+        document.getElementById('admin-tab-contas').style.display = tab === 'contas' ? 'block' : 'none';
+        document.getElementById('admin-tab-tickets').style.display = tab === 'tickets' ? 'block' : 'none';
+        
+        document.getElementById('tab-contas').style.background = tab === 'contas' ? 'var(--primary)' : 'transparent';
+        document.getElementById('tab-contas').style.borderColor = tab === 'contas' ? 'var(--primary)' : 'var(--secondary)';
+        document.getElementById('tab-tickets').style.background = tab === 'tickets' ? 'var(--primary)' : 'transparent';
+        document.getElementById('tab-tickets').style.borderColor = tab === 'tickets' ? 'var(--primary)' : 'var(--secondary)';
+    },
+
+    editUserBalance(userId) {
+        const user = this.users.find(u => u.id === userId);
+        if (!user) return;
+        
+        const newBalance = parseFloat(prompt(`Editar saldo de ${user.name}\n\nSaldo atual: R$ ${this.formatMoney(user.balance)}\n\nNovo saldo:`, user.balance));
+        
+        if (newBalance !== null && newBalance >= 0) {
+            user.balance = newBalance;
+            this.saveData();
+            alert(`✅ Saldo de ${user.name} atualizado para R$ ${this.formatMoney(newBalance)}`);
+            this.render();
+        }
+    },
+
+    deleteUser(userId) {
+        const user = this.users.find(u => u.id === userId);
+        if (!user) return;
+        
+        if (confirm(`⚠️ Tem certeza que deseja deletar a conta de ${user.name} (${user.cpf})?\n\nEsta ação não pode ser desfeita!`)) {
+            this.users = this.users.filter(u => u.id !== userId);
+            
+            this.transactions = this.transactions.filter(t => t.userId !== userId);
+            this.cards = this.cards.filter(c => c.userId !== userId);
+            this.investments = this.investments.filter(i => i.userId !== userId);
+            this.loans = this.loans.filter(l => l.userId !== userId);
+            this.insurances = this.insurances.filter(i => i.userId !== userId);
+            this.rewards = this.rewards.filter(r => r.userId !== userId);
+            
+            this.saveData();
+            alert(`✅ Conta de ${user.name} deletada com sucesso!`);
+            this.render();
+        }
+    },
+
+    respondToTicket(ticketId) {
+        const ticket = this.supportTickets.find(t => t.id === ticketId);
+        if (!ticket) return;
+        
+        const response = document.getElementById(`response-${ticketId}`).value.trim();
+        if (!response) {
+            alert('Digite uma resposta!');
+            return;
+        }
+        
+        ticket.response = response;
+        ticket.status = 'closed';
+        this.saveData();
+        
+        alert(`✅ Resposta enviada para ${ticket.userName}!`);
+        this.render();
+    },
+
+    updateUser() {
+        const index = this.users.findIndex(u => u.id === this.currentUser.id);
+        if (index !== -1) this.users[index] = this.currentUser;
+    },
+
+    generatePixKey() {
+        const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+        let key = '';
+        for (let i = 0; i < 32; i++) {
+            key += chars[Math.floor(Math.random() * chars.length)];
+            if ([7, 11, 15, 19].includes(i)) key += '-';
+        }
+        return key;
+    },
+
+    getTransactionIcon(type) {
+        const icons = {
+            pix_out: '⚡', pix_in: '💰', ted: '💸',
+            boleto: '📄', card: '💳', investment: '📈',
+            loan: '💰', recharge: '📱',
+            deposit_pix: '⚡', deposit_ted: '🏦', 
+            deposit_cash: '💵', deposit_boleto: '📄',
+            investment_withdrawal: '💵'
+        };
+        return icons[type] || '💵';
+    },
+
+    formatMoney(value) {
+        return parseFloat(value).toFixed(2).replace('.', ',');
+    },
+
+    formatDate(dateString) {
+        const date = new Date(dateString);
+        const now = new Date();
+        const diff = now - date;
+        if (diff < 86400000) return 'Hoje, ' + date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        if (diff < 172800000) return 'Ontem, ' + date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        return date.toLocaleDateString('pt-BR');
+    },
+
+    attachEventListeners() {}
+};
+
+APP.init();
+    </script>
+</body>
+</html>
